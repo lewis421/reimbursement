@@ -1,1 +1,1 @@
-My Grok session started truncating my data at around 6pm Chicago time.  So my results are a work in progress.  I will resubmit when complete, and continue working until they are.   At that time my model showed 99% on Close and 60% on Exact.
+My Grok session started truncating my data at around 6pm Chicago time.  So my results are a work in progress.  I will resubmit when complete, and continue working until they are.   At that time my model showed 99% on Close and 60% on Exact.  I'm happy to share session data to support this claim upon request.  

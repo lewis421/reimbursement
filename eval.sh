@@ -74,10 +74,6 @@ errors_array=()
 
 # Process each test case
 for ((i=0; i<num_cases; i++)); do
-    if [ $((i % 100)) -eq 0 ]; then
-        echo "Progress: $i/$num_cases cases processed..." >&2
-    fi
-    
     # Extract test case data from pre-loaded array
     IFS=':' read -r trip_duration miles_traveled receipts_amount expected <<< "${test_cases[i]}"
     
@@ -90,6 +86,13 @@ for ((i=0; i<num_cases; i++)); do
             
             # Calculate absolute error using bc
             error=$(echo "scale=10; if ($actual - $expected < 0) -1 * ($actual - $expected) else ($actual - $expected)" | bc)
+            
+            # Print case details
+            printf "Case %d:\n" $((i+1))
+            printf "  Inputs: %s days, %s miles, \$%.2f receipts\n" "$trip_duration" "$miles_traveled" "$receipts_amount"
+            printf "  Expected: \$%.2f\n" "$expected"
+            printf "  Actual: \$%.2f\n" "$actual"
+            printf "  Error: \$%.2f\n\n" "$error"
             
             # Store result in memory array
             results_array+=("$((i+1)):$expected:$actual:$error:$trip_duration:$miles_traveled:$receipts_amount")
@@ -112,16 +115,18 @@ for ((i=0; i<num_cases; i++)); do
             # Track maximum error
             if (( $(echo "$error > $max_error" | bc -l) )); then
                 max_error="$error"
-                max_error_case="Case $((i+1)): $trip_duration days, $miles_traveled miles, \$$receipts_amount receipts"
+                max_error_case="Case $((i+1)): $trip_duration days, $miles_traveled miles, \$$receipts_amount"
             fi
             
         else
             errors_array+=("Case $((i+1)): Invalid output format: $output")
+            printf "Case %d: Invalid output format: %s\n\n" $((i+1)) "$output"
         fi
     else
         # Capture stderr for error reporting
         error_msg=$(./run.sh "$trip_duration" "$miles_traveled" "$receipts_amount" 2>&1 >/dev/null | tr -d '\n')
         errors_array+=("Case $((i+1)): Script failed with error: $error_msg")
+        printf "Case %d: Script failed with error: %s\n\n" $((i+1)) "$error_msg"
     fi
 done
 
@@ -140,8 +145,8 @@ else
     avg_error=$(echo "scale=2; $total_error / $successful_runs" | bc)
     
     # Calculate percentages
-    exact_pct=$(echo "scale=1; $exact_matches * 100 / $successful_runs" | bc)
-    close_pct=$(echo "scale=1; $close_matches * 100 / $successful_runs" | bc)
+    exact_pct=$(echo "scale=2; $exact_matches * 100 / $successful_runs" | bc)
+    close_pct=$(echo "scale=2; $close_matches * 100 / $successful_runs" | bc)
     
     echo "✅ Evaluation Complete!"
     echo ""
@@ -167,7 +172,7 @@ else
     elif [ $exact_matches -gt 800 ]; then
         echo "🥈 Great work! You have captured most of the system behavior."
     elif [ $exact_matches -gt 500 ]; then
-        echo "🥉 Good progress! You understand some key patterns."
+        echo "🥉 Good progress! You understand some patterns."
     else
         echo "📚 Keep analyzing the patterns in the interviews and test cases."
     fi
@@ -205,4 +210,4 @@ echo "  1. Fix any script errors shown above"
 echo "  2. Ensure your run.sh outputs only a number"
 echo "  3. Analyze the patterns in the interviews and public cases"
 echo "  4. Test edge cases around trip length and receipt amounts"
-echo "  5. Submit your solution via the Google Form when ready!" 
+echo "  5. Submit your solution via the Google Form when ready!"
